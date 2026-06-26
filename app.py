@@ -6,7 +6,8 @@ from werkzeug.utils import secure_filename
 import time
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-here'  # Change this!
+# Use environment variable for secret key
+app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 
 UPLOAD_FOLDER = "uploads"
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp'}
@@ -19,7 +20,8 @@ app.config["MAX_CONTENT_LENGTH"] = MAX_FILE_SIZE
 logging.basicConfig(level=logging.INFO)
 
 # Initialize OCR reader once (not per request)
-reader = easyocr.Reader(['en'])
+# Use GPU if available, otherwise CPU
+reader = easyocr.Reader(['en'], gpu=False)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -70,5 +72,9 @@ def upload():
         return redirect(url_for('home'))
 
 if __name__ == "__main__":
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    # For production
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     app.run(debug=True)
