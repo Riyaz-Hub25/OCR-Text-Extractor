@@ -1,0 +1,4 @@
+flask
+easyocr
+gunicorn
+werkzeug
